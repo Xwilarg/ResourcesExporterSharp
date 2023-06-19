@@ -13,3 +13,6 @@ else
 {
     Console.WriteLine("Invalid command");
 }
+
+Console.WriteLine("Press any key to close the program");
+Console.ReadKey();
