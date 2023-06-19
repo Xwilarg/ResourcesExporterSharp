@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Text;
+using System.Xml;
 using System.Xml.Serialization;
 
 IEnumerable<string> GetNextResourcePath(string path)
@@ -56,23 +57,32 @@ if (!resources.Any())
     Console.WriteLine("Fatal Error: No resource found");
 }
 
+var data = resources.SelectMany(x => x.Resource.Data).ToList();
+using var ms = new MemoryStream();
+using var binWriter = new BinaryWriter(ms);
+foreach (var res in resources)
+{
+    binWriter.Write(res.Resource.Data.Length);
+    binWriter.Write(res.Path);
+}
+data.Add(new()
+{
+    Name = "METADATA",
+    Value = Convert.ToBase64String(ms.ToArray()),
+    Comment = "DO NOT MODIFY",
+    Mimetype = "application/x-microsoft.net.object.binary.base64"
+});
+
 var output = new Resource()
 {
-    Data = resources.SelectMany(x =>
-    {
-        var data = x.Resource.Data;
-        Console.WriteLine(x.Path);
-        foreach (var d in data)
-        {
-            d.Path = x.Path;
-        }
-        return data;
-    }).ToArray(),
+    Data = data.ToArray(),
     Resheaders = resources[0].Resource.Resheaders
 };
 xml.Serialize(writer, output);
 writer.Flush();
 writer.Close();
+
+Console.WriteLine("OK");
 
 // XML
 
@@ -95,10 +105,10 @@ public record Resheader
 
 public record Data
 {
-    [XmlAttribute("path")]
-    public string Path;
     [XmlAttribute("name")]
     public string Name;
+    [XmlAttribute("mimetype")]
+    public string Mimetype;
     [XmlAttribute("xml:space")]
     public string XmlSpace;
     [XmlElement("value")]
