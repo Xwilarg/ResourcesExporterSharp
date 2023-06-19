@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System.Xml;
+using System.Xml.Serialization;
 
 partial class RessourcesExporterSharp
 {
@@ -50,9 +51,25 @@ partial class RessourcesExporterSharp
             return;
         }
 
-        for (int i = 0; i < res.Data.Length; i++)
+        List<(string path, Data data)> tmpData = new(); // TODO: Linq
+        for (int i = 0; i < data.Count; i++)
         {
+            tmpData.Add((paths[i], data[i]));
+        }
 
+        var finalData = tmpData.GroupBy(x => x.path);
+        XmlSerializer outputXml = new(typeof(Resource));
+
+        foreach (var fd in finalData)
+        {
+            var writer = XmlWriter.Create(fd.Key);
+            var outData = fd.Select(x => x.data).ToArray();
+            outputXml.Serialize(writer, new Resource()
+            {
+                Data = outData,
+                Resheaders = res.Resheaders
+            });
+            Console.WriteLine($"Wrote {outData.Length} into {fd.Key}");
         }
 
         Console.WriteLine("OK");
