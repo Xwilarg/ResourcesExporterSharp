@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Diagnostics;
+using System.Xml;
 using System.Xml.Serialization;
 
 partial class RessourcesExporterSharp
@@ -69,7 +70,45 @@ partial class RessourcesExporterSharp
                 Data = outData,
                 Resheaders = res.Resheaders
             });
+            writer.Flush();
+            writer.Close();
             Console.WriteLine($"Wrote {outData.Length} into {fd.Key}");
+        }
+
+        Console.Write("Attempt to locate RESGEN... ");
+        string? resgenPath = null;
+        if (Directory.Exists("C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\"))
+        {
+            foreach (var dir in Directory.GetDirectories("C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\"))
+            {
+                if (File.Exists($"{dir}\\bin\\NETFX 4.8 Tools\\ResGen.exe"))
+                {
+                    resgenPath = $"{dir}\\bin\\NETFX 4.8 Tools\\ResGen.exe";
+                }
+            }
+        }
+        Console.WriteLine(resgenPath == null ? "Failed" : "OK");
+        if (resgenPath == null)
+        {
+            Console.WriteLine("Couldn't locate ResGen.exe, please enter the path manually or press enter to skip this step");
+            resgenPath = Console.ReadLine();
+            if (string.IsNullOrEmpty(resgenPath))
+            {
+                Console.WriteLine("OK");
+                return;
+            }
+            else if (!File.Exists(resgenPath))
+            {
+                Console.WriteLine("Invalid path");
+                return;
+            }
+        }
+
+        foreach (var p in paths.Distinct())
+        {
+            Console.WriteLine($"Launching ResGen on {p}\n");
+            var process = Process.Start(resgenPath, $"\"{p}\" /str:csharp"); // TODO: Probably a better way to handle this
+            process.WaitForExit();
         }
 
         Console.WriteLine("OK");
