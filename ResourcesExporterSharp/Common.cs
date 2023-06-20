@@ -23,6 +23,8 @@ public record Data
     public string Name;
     [XmlAttribute("mimetype")]
     public string Mimetype;
+    [XmlAttribute("type")]
+    public string Type;
     [XmlAttribute("xml:space")]
     public string XmlSpace;
     [XmlElement("value")]

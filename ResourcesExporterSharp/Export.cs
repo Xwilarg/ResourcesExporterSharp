@@ -52,6 +52,11 @@ partial class RessourcesExporterSharp
                 Console.WriteLine("No data, skipping");
                 continue;
             }
+            if (res.Data.All(x => !string.IsNullOrEmpty(x.Type) || !string.IsNullOrEmpty(x.Mimetype)))
+            {
+                Console.WriteLine("Data contains no string, skipping");
+                continue;
+            }
             Console.WriteLine($"OK, {res.Data.Length} elements");
 
             resources.Add((res, file));
@@ -60,6 +65,7 @@ partial class RessourcesExporterSharp
         if (!resources.Any())
         {
             Console.WriteLine("Fatal Error: No resource found");
+            return;
         }
 
         // We write the path in the "Other" section as binary to find back the original paths
