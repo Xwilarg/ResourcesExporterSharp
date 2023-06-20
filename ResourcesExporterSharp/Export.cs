@@ -23,11 +23,6 @@ partial class RessourcesExporterSharp
 
     public static void Export()
     {
-        if (File.Exists("Output.resx"))
-        {
-            File.Delete("Output.resx");
-        }
-
         Console.WriteLine("Please enter path to main folder containing all the resx");
         string? path = Console.ReadLine();
 
@@ -60,6 +55,11 @@ partial class RessourcesExporterSharp
             if (res.Data.All(x => !string.IsNullOrEmpty(x.Type) || !string.IsNullOrEmpty(x.Mimetype)))
             {
                 Console.WriteLine("Data contains no string, skipping");
+                continue;
+            }
+            if (res.Data.Any(x => x.Name == "METADATA" && x.Mimetype == Constants.MetadataMimeType))
+            {
+                Console.WriteLine("Metadata found conflicting with current metadata system, are you trying to export an export file? Skipping");
                 continue;
             }
             Console.WriteLine($"OK, {res.Data.Length} elements");
