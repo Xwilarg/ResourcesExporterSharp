@@ -84,6 +84,7 @@ partial class RessourcesExporterSharp
                 if (File.Exists($"{dir}\\bin\\NETFX 4.8 Tools\\ResGen.exe"))
                 {
                     resgenPath = $"{dir}\\bin\\NETFX 4.8 Tools\\ResGen.exe";
+                    break;
                 }
             }
         }
